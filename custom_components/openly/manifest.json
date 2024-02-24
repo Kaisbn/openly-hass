@@ -1,0 +1,14 @@
+{
+  "domain": "openly",
+  "name": "Rently",
+  "codeowners": ["@Kaisbn"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://www.home-assistant.io/integrations/openly",
+  "homekit": {},
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "requirements": ["openly-core==0.1.0"],
+  "ssdp": [],
+  "zeroconf": []
+}
