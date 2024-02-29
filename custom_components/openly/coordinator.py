@@ -4,12 +4,14 @@ from datetime import timedelta
 import logging
 
 from openly.cloud import RentlyCloud
-from openly.exceptions import InvalidResponseError, RentlyAuthError
+from openly.exceptions import InvalidResponseError, RentlyAPIError, RentlyAuthError
 
+from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
+from .const import API_LOGIN_RETRY_TIME, API_MAX_LOGIN_ATTEMPTS, DOMAIN
 from .hub import HubEntity
 from .lock import LockEntity
 
@@ -33,6 +35,32 @@ class CloudCoordinator(DataUpdateCoordinator):
         self.hubs: list[HubEntity] = []
         self.locks: list[LockEntity] = []
 
+    async def async_login(self):
+        """Login to Rently."""
+        async with asyncio.timeout(API_LOGIN_RETRY_TIME * API_MAX_LOGIN_ATTEMPTS):
+            attempts = 1
+            while not self.cloud.connected:
+                try:
+                    config_entry = self.hass.config_entries.async_entries(DOMAIN)[0]
+                    connected = await self.hass.async_add_executor_job(
+                        self.cloud.login,
+                        config_entry.data[CONF_EMAIL],
+                        config_entry.data[CONF_PASSWORD],
+                    )  # only 1 entry
+                    if not connected:
+                        raise RentlyAuthError("Could not connect to Rently")
+                except RentlyAPIError as err:
+                    if attempts > API_MAX_LOGIN_ATTEMPTS:
+                        raise InvalidResponseError from err
+                    attempts += 1
+                    asyncio.sleep(API_LOGIN_RETRY_TIME)
+
+    async def _async_refresh(self, **kwargs):
+        # Make sure user is connected
+        await self.async_login()
+
+        return await super()._async_refresh(**kwargs)
+
     async def _async_update_data(self):
         """Fetch data from API endpoint.
 
@@ -40,9 +68,8 @@ class CloudCoordinator(DataUpdateCoordinator):
         so entities can quickly look up their data.
         """
         try:
-            async with asyncio.timeout(10):
-                # Get list of hubs
-                return await self.hass.async_add_executor_job(self.cloud.get_hubs)
+            # Return list of hubs
+            return await self.hass.async_add_executor_job(self.cloud.get_hubs)
         except RentlyAuthError as err:
             # Raising ConfigEntryAuthFailed will cancel future updates
             # and start a config flow with SOURCE_REAUTH (async_step_reauth)

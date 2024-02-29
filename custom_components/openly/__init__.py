@@ -5,30 +5,29 @@ import asyncio
 
 from openly.cloud import RentlyCloud
 from openly.devices import Lock
-from openly.exceptions import (
-    InvalidResponseError,
-    MissingParametersError,
-    RentlyAuthError,
-)
+from openly.exceptions import InvalidResponseError, RentlyAuthError
+import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, Platform
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
-from .config_flow import API_URL, LOGIN_URL, CannotConnect, InvalidAuth
+from .config_flow import API_URL, LOGIN_URL
 from .const import DOMAIN
 from .coordinator import CloudCoordinator
 from .hub import HubEntity
 from .lock import LockEntity
 
+CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
+
 PLATFORMS: list[Platform] = [Platform.LOCK]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up the component."""
+    """Set up the Rently component."""
     hass.data.setdefault(DOMAIN, {})
     return True
 
@@ -40,15 +39,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         login_url=LOGIN_URL,
     )
 
-    try:
-        await hass.async_add_executor_job(
-            cloud.login, entry.data[CONF_EMAIL], entry.data[CONF_PASSWORD]
-        )
-    except RentlyAuthError as err:
-        raise InvalidAuth from err
-    except MissingParametersError as err:
-        raise CannotConnect from err
-
     # Fetch initial data so we have data when entities subscribe
     #
     # If the refresh fails, async_config_entry_first_refresh will
@@ -58,29 +48,29 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # coordinator.async_refresh() instead
     #
     coordinator = CloudCoordinator(hass, cloud)
+    # Initialize coordinator and login
     await coordinator.async_config_entry_first_refresh()
 
     try:
         async with asyncio.timeout(10):
-            # Get list of hubs
-            lock_devices = []
-            hub_devices = await hass.async_add_executor_job(cloud.get_hubs)
-            for hub in hub_devices:
+            # Use lists as transactions
+            locks = []
+            hubs = []
+            # Retrieve list of hubs from coordinator data
+            for hub in coordinator.data:
+                hubs.append(HubEntity(coordinator, hub.id))
+
                 # Get list of devices
                 devices_data = await hass.async_add_executor_job(
                     cloud.get_devices, hub.id
                 )
-
                 for device in devices_data:
                     if isinstance(device, Lock):
-                        lock_devices.append(device)
+                        locks.append(LockEntity(coordinator, device.id))
 
-            # Create HubCoordinator for each hub
-            coordinator.hubs = [HubEntity(coordinator, hub.id) for hub in hub_devices]
-
-            coordinator.locks = [
-                LockEntity(coordinator, lock.id) for lock in lock_devices
-            ]
+            # Save data
+            coordinator.hubs = hubs
+            coordinator.locks = locks
     except RentlyAuthError as err:
         # Raising ConfigEntryAuthFailed will cancel future updates
         # and start a config flow with SOURCE_REAUTH (async_step_reauth)

@@ -1,15 +1,17 @@
 {
-  "domain": "openly",
+  "domain": "rently",
   "name": "Rently",
-  "codeowners": ["@Kaisbn"],
+  "codeowners": [
+    "@Kaisbn"
+  ],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://www.home-assistant.io/integrations/openly",
+  "documentation": "https://github.com/Kaisbn/openly-hass",
   "homekit": {},
   "integration_type": "hub",
   "iot_class": "cloud_polling",
-  "requirements": ["openly-core==0.1.0"],
-  "ssdp": [],
-  "version": "0.1.0",
-  "zeroconf": []
+  "requirements": [
+    "openly-core==0.1.1"
+  ],
+  "version": "0.1.1"
 }

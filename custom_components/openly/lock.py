@@ -1,4 +1,5 @@
 """Rently Lock Entity."""
+import asyncio
 from datetime import timedelta
 from typing import Any
 from venv import logger
@@ -13,7 +14,6 @@ from homeassistant.const import (
     STATE_LOCKED,
     STATE_LOCKING,
     STATE_UNAVAILABLE,
-    STATE_UNLOCKED,
     STATE_UNLOCKING,
 )
 from homeassistant.core import HomeAssistant
@@ -25,7 +25,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .const import DOMAIN
+from .const import DOMAIN, LOCK_MAX_REFRESH_ATTEMPTS, LOCK_UPDATE_DELAY
 
 # Poll every minute
 SCAN_INTERVAL = timedelta(seconds=60)
@@ -40,16 +40,9 @@ async def async_setup_entry(
 
 
 class LockEntity(CoordinatorEntity, BaseLockEntity):
-    """An entity using CoordinatorEntity.
+    """Rently Lock Entity implementing lock/unlock."""
 
-    The CoordinatorEntity class provides:
-      should_poll
-      async_update
-      async_added_to_hass
-      available
-
-    """
-
+    _attr_force_update = False
     _lock: Lock = None
 
     def __init__(self, coordinator: DataUpdateCoordinator, idx: str) -> None:
@@ -58,6 +51,14 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
         self.idx: str = idx
         self._attr_unique_id = f"rently-{idx}"
         self._state = STATE_UNAVAILABLE
+
+    async def async_get_lock_status(self) -> bool:
+        """Retrieve the lock status."""
+        lock = await self.hass.async_add_executor_job(
+            self.coordinator.cloud.get_device, self.idx
+        )
+
+        return lock.mode == STATE_LOCKED
 
     async def async_update(self) -> None:
         """Update the entity from the server."""
@@ -129,11 +130,23 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
         self.async_write_ha_state()
         # Set status
         self._lock.lock()
+        # Send command
         await self.hass.async_add_executor_job(
             self.coordinator.cloud.update_device_status, self._lock
         )
-        self._state = STATE_LOCKED
-        self.async_write_ha_state()
+
+        attempts = 1
+        while attempts < LOCK_MAX_REFRESH_ATTEMPTS:
+            # Wait for command to complete
+            await asyncio.sleep(LOCK_UPDATE_DELAY)
+            # Stop the loop when device is locked
+            locked = await self.async_get_lock_status()
+            if locked:
+                break
+            attempts += 1
+
+        # final update
+        await self.async_device_update()
 
     async def async_unlock(self, **kwargs: Any) -> None:
         """Lock the device."""
@@ -143,12 +156,23 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
         self.async_write_ha_state()
         # Set status
         self._lock.unlock()
-
+        # Send command
         await self.hass.async_add_executor_job(
             self.coordinator.cloud.update_device_status, self._lock
         )
-        self._state = STATE_UNLOCKED
-        self.async_write_ha_state()
+
+        attempts = 1
+        while attempts < LOCK_MAX_REFRESH_ATTEMPTS:
+            # Wait for command to complete
+            await asyncio.sleep(LOCK_UPDATE_DELAY)
+            # Stop the loop when device is unlocked
+            locked = await self.async_get_lock_status()
+            if not locked:
+                break
+            attempts += 1
+
+        # final update
+        await self.async_device_update()
 
 
 class DeviceNotFoundError(HomeAssistantError):
