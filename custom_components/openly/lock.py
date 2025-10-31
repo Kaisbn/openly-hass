@@ -63,17 +63,15 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
         self._lock = await self.hass.async_add_executor_job(
             self.coordinator.cloud.get_device, self.idx
         )
-        if not self._lock:
-            if self.available:
-                logger.error("Lock not found")
-            self._attr_available = False
-            return
+        if self._lock:
+            self._state = self._lock.mode
 
-        self._attr_available = True
-        self._attr_extra_LockState.STATE_attributes = {
-            ATTR_BATTERY_LEVEL: self._lock.battery,
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return the state attributes of the last update."""
+        return {
+            ATTR_BATTERY_LEVEL: self._lock.battery if self._lock else None,
         }
-        self._state = self._lock.mode
 
     @property
     def should_poll(self) -> bool:
@@ -83,7 +81,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
-        return self._attr_available
+        return self._lock is not None
 
     @property
     def name(self) -> str:
