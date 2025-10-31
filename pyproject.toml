@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "openly-hass"
+version = "0.1.0"
+description = ""
+authors = ["Kais Bennaceur <bennaceur.kais@me.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+openly-core = "0.1.1"
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^3.1.0"
+pytest = "^8.0.2"
+flake8 = "^7.0.0"
+black = "^24.2.0"
+mypy = "^1.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
