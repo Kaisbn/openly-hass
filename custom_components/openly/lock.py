@@ -9,12 +9,15 @@ from openly.devices import Lock
 from homeassistant.components.lock import LockEntity as BaseLockEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    ATTR_BATTERY_LEVEL,
-    STATE_PROBLEM,
-    STATE_CLOSED,
-    STATE_CLOSING,
+    ATTR_BATTERY_LEVEL
+)
+
+from homeassistant.components.lock import (
+    STATE_JAMMED,
+    STATE_LOCKED,
+    STATE_LOCKING,
     STATE_UNAVAILABLE,
-    STATE_OPENING,
+    STATE_UNLOCKING,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
@@ -58,7 +61,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
             self.coordinator.cloud.get_device, self.idx
         )
 
-        return lock.mode == STATE_CLOSED
+        return lock.mode == STATE_LOCKED
 
     async def async_update(self) -> None:
         """Update the entity from the server."""
@@ -105,28 +108,28 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
     @property
     def is_locked(self) -> bool:
         """Return true if lock is locked."""
-        return self._state == STATE_CLOSED
+        return self._state == STATE_LOCKED
 
     @property
     def is_jammed(self) -> bool:
         """Return true if lock is jammed."""
-        return self._state == STATE_PROBLEM
+        return self._state == STATE_JAMMED
 
     @property
     def is_locking(self) -> bool:
         """Return true if lock is locking."""
-        return self._state == STATE_CLOSING
+        return self._state == STATE_LOCKING
 
     @property
     def is_unlocking(self) -> bool:
         """Return true if lock is unlocking."""
-        return self._state == STATE_OPENING
+        return self._state == STATE_UNLOCKING
 
     async def async_lock(self, **kwargs: Any) -> None:
         """Lock the device."""
         if not self._lock:
             raise DeviceNotFoundError
-        self._state = STATE_CLOSING
+        self._state = STATE_LOCKING
         self.async_write_ha_state()
         # Set status
         self._lock.lock()
@@ -152,7 +155,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
         """Lock the device."""
         if not self._lock:
             raise DeviceNotFoundError
-        self._state = STATE_OPENING
+        self._state = STATE_UNLOCKING
         self.async_write_ha_state()
         # Set status
         self._lock.unlock()
