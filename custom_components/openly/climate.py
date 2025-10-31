@@ -5,7 +5,8 @@ from enum import StrEnum
 from openly.devices import Thermostat
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    ATTR_BATTERY_LEVEL
+    ATTR_BATTERY_LEVEL,
+    UnitofTemperature
 )
 
 from homeassistant.components.climate import (
@@ -94,6 +95,11 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
         return {
             ATTR_BATTERY_LEVEL: self._climate.battery if self._climate else None,
         }
+
+    @property
+    def temperature_unit(self) -> str:
+        """Return the unit of measurement."""
+        return UnitofTemperature.FARHENHEIT # TODO: Add support for all units
 
     @property
     def current_temperature(self) -> float | None:

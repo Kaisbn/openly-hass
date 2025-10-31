@@ -60,17 +60,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hubs = []
             # Retrieve list of hubs from coordinator data
             for hub in coordinator.data:
-                hubs.append(HubEntity(coordinator, hub.id))
+                hubs.append(HubEntity(coordinator, hub.device_id))
 
                 # Get list of devices
                 devices_data = await hass.async_add_executor_job(
-                    cloud.get_devices, hub.id
+                    cloud.get_devices, hub.device_id
                 )
                 for device in devices_data:
                     if isinstance(device, Lock):
-                        locks.append(LockEntity(coordinator, device.id))
+                        locks.append(LockEntity(coordinator, device.device_id))
                     if isinstance(device, Thermostat):
-                        climates.append(ClimateEntity(coordinator, device.id))
+                        climates.append(ClimateEntity(coordinator, device.device_id))
 
             # Save data
             coordinator.climates = climates
