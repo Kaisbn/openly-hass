@@ -36,8 +36,8 @@ SCAN_INTERVAL = timedelta(seconds=60)
 
 class FanMode(StrEnum):
     """Fan mode for climate devices."""
-    ON = FAN_ON.value
-    AUTO = FAN_AUTO.value
+    ON = FAN_ON
+    AUTO = FAN_AUTO
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
