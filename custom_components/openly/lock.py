@@ -48,7 +48,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
         super().__init__(coordinator, context=idx)
         self.idx: str = idx
         self._attr_unique_id = f"rently-{idx}"
-        self._state = LockState.STATE_UNAVAILABLE
+        self._state = None
 
     async def async_get_lock_status(self) -> bool:
         """Retrieve the lock status."""
