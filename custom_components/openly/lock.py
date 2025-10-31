@@ -13,11 +13,13 @@ from homeassistant.const import (
 )
 
 from homeassistant.components.lock import (
+    LockEntityFeature,
     STATE_JAMMED,
     STATE_LOCKED,
     STATE_LOCKING,
     STATE_UNAVAILABLE,
     STATE_UNLOCKING,
+    STATE_OPEN
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
@@ -45,8 +47,9 @@ async def async_setup_entry(
 class LockEntity(CoordinatorEntity, BaseLockEntity):
     """Rently Lock Entity implementing lock/unlock."""
 
-    _attr_force_update = False
-    _lock: Lock = None
+    _attr_supported_features: LockEntityFeature = LockEntityFeature.OPEN
+    _attr_force_update: bool = False
+    _lock: Lock | None = None
 
     def __init__(self, coordinator: DataUpdateCoordinator, idx: str) -> None:
         """Pass coordinator to CoordinatorEntity."""
@@ -124,6 +127,10 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
     def is_unlocking(self) -> bool:
         """Return true if lock is unlocking."""
         return self._state == STATE_UNLOCKING
+
+    @property is_open(self) -> bool:
+        """Return true if lock is unlatched."""
+        return self._state == STATE_OPEN
 
     async def async_lock(self, **kwargs: Any) -> None:
         """Lock the device."""
