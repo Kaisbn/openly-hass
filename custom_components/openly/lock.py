@@ -12,15 +12,7 @@ from homeassistant.const import (
     ATTR_BATTERY_LEVEL
 )
 
-from homeassistant.components.lock import (
-    LockEntityFeature,
-    STATE_JAMMED,
-    STATE_LOCKED,
-    STATE_LOCKING,
-    STATE_UNAVAILABLE,
-    STATE_UNLOCKING,
-    STATE_OPEN
-)
+from homeassistant.components.lock import LockEntityFeature, LockState
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -56,7 +48,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
         super().__init__(coordinator, context=idx)
         self.idx: str = idx
         self._attr_unique_id = f"rently-{idx}"
-        self._state = STATE_UNAVAILABLE
+        self._state = LockState.STATE_UNAVAILABLE
 
     async def async_get_lock_status(self) -> bool:
         """Retrieve the lock status."""
@@ -64,7 +56,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
             self.coordinator.cloud.get_device, self.idx
         )
 
-        return lock.mode == STATE_LOCKED
+        return lock.mode == LockState.STATE_LOCKED
 
     async def async_update(self) -> None:
         """Update the entity from the server."""
@@ -78,7 +70,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
             return
 
         self._attr_available = True
-        self._attr_extra_state_attributes = {
+        self._attr_extra_LockState.STATE_attributes = {
             ATTR_BATTERY_LEVEL: self._lock.battery,
         }
         self._state = self._lock.mode
@@ -111,33 +103,33 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
     @property
     def is_locked(self) -> bool:
         """Return true if lock is locked."""
-        return self._state == STATE_LOCKED
+        return self._state == LockState.STATE_LOCKED
 
     @property
     def is_jammed(self) -> bool:
         """Return true if lock is jammed."""
-        return self._state == STATE_JAMMED
+        return self._state == LockState.STATE_JAMMED
 
     @property
     def is_locking(self) -> bool:
         """Return true if lock is locking."""
-        return self._state == STATE_LOCKING
+        return self._state == LockState.STATE_LOCKING
 
     @property
     def is_unlocking(self) -> bool:
         """Return true if lock is unlocking."""
-        return self._state == STATE_UNLOCKING
+        return self._state == LockState.STATE_UNLOCKING
 
     @property
     def is_open(self) -> bool:
         """Return true if lock is unlatched."""
-        return self._state == STATE_OPEN
+        return self._state == LockState.STATE_OPEN
 
     async def async_lock(self, **kwargs: Any) -> None:
         """Lock the device."""
         if not self._lock:
             raise DeviceNotFoundError
-        self._state = STATE_LOCKING
+        self._state = LockState.STATE_LOCKING
         self.async_write_ha_state()
         # Set status
         self._lock.lock()
@@ -163,7 +155,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
         """Lock the device."""
         if not self._lock:
             raise DeviceNotFoundError
-        self._state = STATE_UNLOCKING
+        self._state = LockState.STATE_UNLOCKING
         self.async_write_ha_state()
         # Set status
         self._lock.unlock()
