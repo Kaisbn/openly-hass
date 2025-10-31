@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-openly-core = "0.1.1"
+openly-core = "0.3.0"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^3.1.0"
