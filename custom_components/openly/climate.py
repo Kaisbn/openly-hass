@@ -6,7 +6,7 @@ from openly.devices import Thermostat
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_BATTERY_LEVEL,
-    UnitofTemperature
+    UnitOfTemperature
 )
 
 from homeassistant.components.climate import (
@@ -99,7 +99,7 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
     @property
     def temperature_unit(self) -> str:
         """Return the unit of measurement."""
-        return UnitofTemperature.FARHENHEIT # TODO: Add support for all units
+        return UnitOfTemperature.FARHENHEIT # TODO: Add support for all units
 
     @property
     def current_temperature(self) -> float | None:
