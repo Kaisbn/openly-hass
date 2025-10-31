@@ -11,10 +11,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_BATTERY_LEVEL,
     STATE_PROBLEM,
-    STATE_LOCKED,
-    STATE_LOCKING,
+    STATE_CLOSED,
+    STATE_CLOSING,
     STATE_UNAVAILABLE,
-    STATE_UNLOCKING,
+    STATE_OPENING,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
@@ -58,7 +58,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
             self.coordinator.cloud.get_device, self.idx
         )
 
-        return lock.mode == STATE_LOCKED
+        return lock.mode == STATE_CLOSED
 
     async def async_update(self) -> None:
         """Update the entity from the server."""
@@ -105,7 +105,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
     @property
     def is_locked(self) -> bool:
         """Return true if lock is locked."""
-        return self._state == STATE_LOCKED
+        return self._state == STATE_CLOSED
 
     @property
     def is_jammed(self) -> bool:
@@ -115,18 +115,18 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
     @property
     def is_locking(self) -> bool:
         """Return true if lock is locking."""
-        return self._state == STATE_LOCKING
+        return self._state == STATE_CLOSING
 
     @property
     def is_unlocking(self) -> bool:
         """Return true if lock is unlocking."""
-        return self._state == STATE_UNLOCKING
+        return self._state == STATE_OPENING
 
     async def async_lock(self, **kwargs: Any) -> None:
         """Lock the device."""
         if not self._lock:
             raise DeviceNotFoundError
-        self._state = STATE_LOCKING
+        self._state = STATE_CLOSING
         self.async_write_ha_state()
         # Set status
         self._lock.lock()
@@ -152,7 +152,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
         """Lock the device."""
         if not self._lock:
             raise DeviceNotFoundError
-        self._state = STATE_UNLOCKING
+        self._state = STATE_OPENING
         self.async_write_ha_state()
         # Set status
         self._lock.unlock()
