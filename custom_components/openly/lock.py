@@ -10,7 +10,7 @@ from homeassistant.components.lock import LockEntity as BaseLockEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_BATTERY_LEVEL,
-    STATE_JAMMED,
+    STATE_PROBLEM,
     STATE_LOCKED,
     STATE_LOCKING,
     STATE_UNAVAILABLE,
@@ -110,7 +110,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
     @property
     def is_jammed(self) -> bool:
         """Return true if lock is jammed."""
-        return self._state == STATE_JAMMED
+        return self._state == STATE_PROBLEM
 
     @property
     def is_locking(self) -> bool:
