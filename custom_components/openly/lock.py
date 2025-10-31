@@ -128,7 +128,8 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
         """Return true if lock is unlocking."""
         return self._state == STATE_UNLOCKING
 
-    @property is_open(self) -> bool:
+    @property
+    def is_open(self) -> bool:
         """Return true if lock is unlatched."""
         return self._state == STATE_OPEN
 
