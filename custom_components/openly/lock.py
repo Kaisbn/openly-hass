@@ -56,7 +56,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
             self.coordinator.cloud.get_device, self.idx
         )
 
-        return lock.mode == LockState.STATE_LOCKED
+        return lock.mode == LockState.LOCKED
 
     async def async_update(self) -> None:
         """Update the entity from the server."""
@@ -101,33 +101,33 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
     @property
     def is_locked(self) -> bool:
         """Return true if lock is locked."""
-        return self._state == LockState.STATE_LOCKED
+        return self._state == LockState.LOCKED
 
     @property
     def is_jammed(self) -> bool:
         """Return true if lock is jammed."""
-        return self._state == LockState.STATE_JAMMED
+        return self._state == LockState.JAMMED
 
     @property
     def is_locking(self) -> bool:
         """Return true if lock is locking."""
-        return self._state == LockState.STATE_LOCKING
+        return self._state == LockState.LOCKING
 
     @property
     def is_unlocking(self) -> bool:
         """Return true if lock is unlocking."""
-        return self._state == LockState.STATE_UNLOCKING
+        return self._state == LockState.UNLOCKING
 
     @property
     def is_open(self) -> bool:
         """Return true if lock is unlatched."""
-        return self._state == LockState.STATE_OPEN
+        return self._state == LockState.OPEN
 
     async def async_lock(self, **kwargs: Any) -> None:
         """Lock the device."""
         if not self._lock:
             raise DeviceNotFoundError
-        self._state = LockState.STATE_LOCKING
+        self._state = LockState.LOCKING
         self.async_write_ha_state()
         # Set status
         self._lock.lock()
@@ -153,7 +153,7 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
         """Lock the device."""
         if not self._lock:
             raise DeviceNotFoundError
-        self._state = LockState.STATE_UNLOCKING
+        self._state = LockState.UNLOCKING
         self.async_write_ha_state()
         # Set status
         self._lock.unlock()
