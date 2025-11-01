@@ -119,12 +119,12 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
     @property
     def hvac_mode(self) -> HVACMode | None:
         """Return the current HVAC mode."""
-        return self._climate.hvac_mode if self._climate else None
+        return self._climate.mode if self._climate else None
 
     @property
     def hvac_modes(self) -> list[HVACMode] | None:
         """Return the list of available HVAC modes."""
-        return self._climate.hvac_modes if self._climate else None
+        return self._climate.modes if self._climate else None
 
     @property
     def target_temperature_high(self) -> float | None:
