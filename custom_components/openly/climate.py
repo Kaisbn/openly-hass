@@ -141,6 +141,7 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
         await self.hass.async_add_executor_job(
             self.coordinator.cloud.update_device_status, self._climate
         )
+        self.async_write_ha_state()
 
     # Setters
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
