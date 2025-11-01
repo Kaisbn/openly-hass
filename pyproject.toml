@@ -8,7 +8,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
-openly-core = "0.3.0"
+openly-core = "0.3.1"
 
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.8.2"

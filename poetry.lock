@@ -1459,14 +1459,14 @@ twitter = ["twython"]
 
 [[package]]
 name = "openly-core"
-version = "0.3.0"
+version = "0.3.1"
 description = "Python API wrapper for Rently Smart Home hubs and devices"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "openly_core-0.3.0-py3-none-any.whl", hash = "sha256:b66888b77e878cfb58a820f149ab231619d5f792dedc6b659dbffdced4809477"},
-    {file = "openly_core-0.3.0.tar.gz", hash = "sha256:873104a94d746507ae730e42fbaa4c3cc2ced59e6e4569c9405ed60022352a3d"},
+    {file = "openly_core-0.3.1-py3-none-any.whl", hash = "sha256:081354777141160a927676128f7ed8a199fe27d82349cdf18c1f5a1cb5e96d80"},
+    {file = "openly_core-0.3.1.tar.gz", hash = "sha256:299ac4999bf8ccc93e272fcf7a31fd7b48b168368714db0adefd28f22b06efba"},
 ]
 
 [package.dependencies]
@@ -2838,4 +2838,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "5b87df72d8f1f090cf9835e8572c394a36ddb0950dc084db8d60d7743efe3d8f"
+content-hash = "16f919203320724ea6adac32cddb1418f1f271d7c8a9bedd60bcf2ff482aca47"
