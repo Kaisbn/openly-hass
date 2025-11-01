@@ -159,7 +159,7 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
             await asyncio.sleep(CLIMATE_UPDATE_DELAY)
             # Stop the loop when device is updated
             new_state = self.async_get_status()
-            if new_state.mode != self.hvac_mode or new_state.fan != self.fan_mode or new_state.target_temperature_high != self.cooling_setpoint or new_state.target_temperature_low != self.heating_setpoint:
+            if new_state.mode != self.hvac_mode or new_state.fan != self.fan_mode or new_state.cooling_setpoint != self.cooling_setpoint or new_state.heating_setpoint != self.heating_setpoint:
               continue
             break
 
