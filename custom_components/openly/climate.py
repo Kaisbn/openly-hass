@@ -195,4 +195,4 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
             self._climate.cooling_setpoint = int(float(temperature_high))
 
         # Send command
-        self._async_save_state()
+        await self.async_save_state()
