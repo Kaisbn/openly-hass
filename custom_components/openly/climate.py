@@ -1,4 +1,5 @@
 """Climate platform for Rently devices."""
+import asyncio
 from datetime import timedelta
 from enum import StrEnum
 
@@ -10,7 +11,6 @@ from homeassistant.const import (
 )
 
 from homeassistant.components.climate import (
-    ATTR_TEMPERATURE,
     ATTR_TARGET_TEMP_HIGH,
     ATTR_TARGET_TEMP_LOW,
     ClimateEntityFeature,
@@ -27,7 +27,12 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .const import DOMAIN, CLIMATE_MIN_TEMP_SPREAD
+from .const import (
+    CLIMATE_MAX_REFRESH_ATTEMPTS,
+    CLIMATE_MIN_TEMP_SPREAD,
+    CLIMATE_UPDATE_DELAY,
+    DOMAIN,
+)
 from .exceptions import DeviceNotFoundError, StateNotSupportedError
 
 
@@ -61,12 +66,16 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
         self._state = None
 
     async def async_update(self) -> None:
-        """Update the entity from the server."""
-        self._climate = await self.hass.async_add_executor_job(
-            self.coordinator.cloud.get_device, self.idx
-        )
+        """Fetch the entity from the server."""
+        self._climate = await self.async_get_status()
         if self._climate:
             self._state = self._climate.mode
+
+    async def async_get_status(self) -> Thermostat:
+        """Fetch device status from the server"""
+        return await self.hass.async_add_executor_job(
+            self.coordinator.cloud.get_device, self.idx
+        )
 
     # Properties
     @property
@@ -143,7 +152,19 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
         )
         self.async_write_ha_state() # no await
 
+        attempts = 1
+        while attempts < CLIMATE_MAX_REFRESH_ATTEMPTS:
+            attempts += 1
+            # Wait for command to complete
+            await asyncio.sleep(CLIMATE_UPDATE_DELAY)
+            # Stop the loop when device is updated
+            new_state = self.async_get_status()
+            if new_state.mode != self.hvac_mode or new_state.fan != self.fan_mode or new_state.target_temperature_high != self.cooling_setpoint or new_state.target_temperature_low != self.heating_setpoint:
+              continue
+            break
+
     async def async_set_temperature_range(self, low: float, high: float) -> None:
+        """Set temperature range"""
         self._climate.heating_setpoint, self._climate.cooling_setpoint = low, high
         await self.async_save_state()
 
