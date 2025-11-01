@@ -24,7 +24,7 @@ from .lock import LockEntity
 
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 
-PLATFORMS: list[Platform] = [Platform.LOCK]
+PLATFORMS: list[Platform] = [Platform.LOCK, Platform.CLIMATE]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:

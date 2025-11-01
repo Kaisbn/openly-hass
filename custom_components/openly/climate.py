@@ -48,7 +48,7 @@ async def async_setup_entry(
 
 
 class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
-    """Rently Lock Entity implementing climate control."""
+    """Rently Climate Entity implementing climate control."""
     _attr_supported_features: ClimateEntityFeature = ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TARGET_TEMPERATURE_RANGE | ClimateEntityFeature.FAN_MODE | ClimateEntityFeature.TURN_OFF | ClimateEntityFeature.TURN_ON
     _attr_force_update: bool = False
     _climate: Thermostat | None = None
