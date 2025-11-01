@@ -129,12 +129,12 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
     @property
     def target_temperature_high(self) -> float | None:
         """Return the high target temperature."""
-        return self._climate.heating_setpoint if self._climate else None
+        return self._climate.cooling_setpoint if self._climate else None
 
     @property
     def target_temperature_low(self) -> float | None:
         """Return the low target temperature."""
-        return self._climate.cooling_setpoint if self._climate else None
+        return self._climate.heating_setpoint if self._climate else None
 
     async def async_save_state(self) -> None:
         """Send climate state to API"""
@@ -189,10 +189,10 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
 
         # Temperature Range
         if temperature_low:
-            self._climate.cooling_setpoint = int(float(temperature_low))
+            self._climate.heating_setpoint = int(float(temperature_low))
 
         if temperature_high:
-            self._climate.heating_setpoint = int(float(temperature_high))
+            self._climate.cooling_setpoint = int(float(temperature_high))
 
         # Send command
         self._async_save_state()
