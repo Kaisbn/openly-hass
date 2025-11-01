@@ -27,7 +27,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .const import DOMAIN
+from .const import DOMAIN, CLIMATE_MIN_TEMP_SPREAD
 from .exceptions import DeviceNotFoundError, StateNotSupportedError
 
 
@@ -141,7 +141,11 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
         await self.hass.async_add_executor_job(
             self.coordinator.cloud.update_device_status, self._climate
         )
-        self.async_write_ha_state()
+        self.async_write_ha_state() # no await
+
+    async def async_set_temperature_range(self, low: float, high: float) -> None:
+        self._climate.heating_setpoint, self._climate.cooling_setpoint = low, high
+        await self.async_save_state()
 
     # Setters
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
@@ -179,21 +183,13 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
 
     async def async_set_temperature(self, **kwargs) -> None:
         """Set new target temperature"""
-        temperature = kwargs.get(ATTR_TEMPERATURE)
-        temperature_low = kwargs.get(ATTR_TARGET_TEMP_LOW)
-        temperature_high = kwargs.get(ATTR_TARGET_TEMP_HIGH)
+        temperature_low = int(float(kwargs.get(ATTR_TARGET_TEMP_LOW)))
+        temperature_high = int(float(kwargs.get(ATTR_TARGET_TEMP_HIGH)))
+
         # Temperature
-        if temperature and self.hvac_mode == HVACMode.COOL:
-            self._climate.cooling_setpoint = int(float(temperature))
-        elif temperature and self.hvac_mode == HVACMode.HEAT:
-            self._climate.heating_setpoint = int(float(temperature))
-
-        # Temperature Range
-        if temperature_low:
-            self._climate.heating_setpoint = int(float(temperature_low))
-
-        if temperature_high:
-            self._climate.cooling_setpoint = int(float(temperature_high))
-
-        # Send command
-        await self.async_save_state()
+        if self.hvac_mode == HVACMode.COOL and temperature_high:
+            await self.async_set_temperature_range(temperature_high - CLIMATE_MIN_TEMP_SPREAD, temperature_high)
+        elif self.hvac_mode == HVACMode.HEAT and temperature_low:
+            await self.async_set_temperature_range(temperature_low, temperature_low + CLIMATE_MIN_TEMP_SPREAD)
+        elif self.hvac_mode == HVACMode.AUTO:
+          await self.async_set_temperature_range(temperature_low, temperature_high)
