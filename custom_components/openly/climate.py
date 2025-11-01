@@ -151,7 +151,7 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
             raise StateNotSupportedError
 
         # Set status
-        await self.hass.async_add_executor_job(self._climate.mode, hvac_mode)
+        self._climate.mode = hvac_mode
         # Send command
         await self.async_save_state()
 
