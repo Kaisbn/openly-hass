@@ -183,16 +183,16 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
         temperature_high = kwargs.get(ATTR_TARGET_TEMP_HIGH)
         # Temperature
         if temperature and self.hvac_mode == HVACMode.COOL:
-            self._climate.cooling_setpoint = temperature
+            self._climate.cooling_setpoint = int(float(temperature))
         elif temperature and self.hvac_mode == HVACMode.HEAT:
-            self._climate.heating_setpoint = temperature
+            self._climate.heating_setpoint = int(float(temperature))
 
         # Temperature Range
         if temperature_low:
-            self._climate.cooling_setpoint = temperature_low
+            self._climate.cooling_setpoint = int(float(temperature_low))
 
         if temperature_high:
-            self._climate.heating_setpoint = temperature_high
+            self._climate.heating_setpoint = int(float(temperature_high))
 
         # Send command
         self._async_save_state()
