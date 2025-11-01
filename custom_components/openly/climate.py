@@ -99,7 +99,7 @@ class ClimateEntity(CoordinatorEntity, BaseClimateEntity):
     @property
     def temperature_unit(self) -> str:
         """Return the unit of measurement."""
-        return UnitOfTemperature.FARHENHEIT # TODO: Add support for all units
+        return UnitOfTemperature.FAHRENHEIT # TODO: Add support for all units
 
     @property
     def current_temperature(self) -> float | None:
