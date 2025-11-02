@@ -2,7 +2,6 @@
 import asyncio
 from datetime import timedelta
 from typing import Any
-from venv import logger
 
 from openly.devices import Lock
 
@@ -14,7 +13,6 @@ from homeassistant.const import (
 
 from homeassistant.components.lock import LockEntityFeature, LockState
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import (
@@ -23,6 +21,7 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from .const import DOMAIN, LOCK_MAX_REFRESH_ATTEMPTS, LOCK_UPDATE_DELAY
+from .exceptions import DeviceNotFoundError
 
 # Poll every minute
 SCAN_INTERVAL = timedelta(seconds=60)
@@ -174,7 +173,3 @@ class LockEntity(CoordinatorEntity, BaseLockEntity):
 
         # final update
         await self.async_device_update()
-
-
-class DeviceNotFoundError(HomeAssistantError):
-    """Error to indicate device not found."""

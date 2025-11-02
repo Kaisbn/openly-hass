@@ -4,17 +4,20 @@ version = "0.1.0"
 description = ""
 authors = ["Kais Bennaceur <bennaceur.kais@me.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
-openly-core = "0.1.1"
+openly-core = "0.3.1"
 
 [tool.poetry.group.dev.dependencies]
-pylint = "^3.1.0"
-pytest = "^8.0.2"
-flake8 = "^7.0.0"
-black = "^24.2.0"
-mypy = "^1.8.0"
+bandit = "^1.8.2"
+safety = "^3.2.14"
+sphinx = "^8.1.3"
+mypy = "^1.14.1"
+types-requests = "^2.32.0.20241016"
+pytest = "^8.3.4"
+pytest-cov = "^6.0.0"
 
 [build-system]
 requires = ["poetry-core"]

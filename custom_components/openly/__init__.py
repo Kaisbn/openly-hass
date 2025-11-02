@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 
 from openly.cloud import RentlyCloud
-from openly.devices import Lock
+from openly.devices import Lock, Thermostat
 from openly.exceptions import InvalidResponseError, RentlyAuthError
 import voluptuous as vol
 
@@ -18,12 +18,13 @@ from homeassistant.helpers.update_coordinator import UpdateFailed
 from .config_flow import API_URL, LOGIN_URL
 from .const import DOMAIN
 from .coordinator import CloudCoordinator
+from .climate import ClimateEntity
 from .hub import HubEntity
 from .lock import LockEntity
 
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 
-PLATFORMS: list[Platform] = [Platform.LOCK]
+PLATFORMS: list[Platform] = [Platform.LOCK, Platform.CLIMATE]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -54,21 +55,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         async with asyncio.timeout(10):
             # Use lists as transactions
+            climates = []
             locks = []
             hubs = []
             # Retrieve list of hubs from coordinator data
             for hub in coordinator.data:
-                hubs.append(HubEntity(coordinator, hub.id))
+                hubs.append(HubEntity(coordinator, hub.device_id))
 
                 # Get list of devices
                 devices_data = await hass.async_add_executor_job(
-                    cloud.get_devices, hub.id
+                    cloud.get_devices, hub.device_id
                 )
                 for device in devices_data:
                     if isinstance(device, Lock):
-                        locks.append(LockEntity(coordinator, device.id))
+                        locks.append(LockEntity(coordinator, device.device_id))
+                    if isinstance(device, Thermostat):
+                        climates.append(ClimateEntity(coordinator, device.device_id))
 
             # Save data
+            coordinator.climates = climates
             coordinator.hubs = hubs
             coordinator.locks = locks
     except RentlyAuthError as err:

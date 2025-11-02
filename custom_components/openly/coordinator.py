@@ -11,6 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
+from .climate import ClimateEntity
 from .const import API_LOGIN_RETRY_TIME, API_MAX_LOGIN_ATTEMPTS, DOMAIN
 from .hub import HubEntity
 from .lock import LockEntity
@@ -34,6 +35,7 @@ class CloudCoordinator(DataUpdateCoordinator):
         self.cloud = cloud
         self.hubs: list[HubEntity] = []
         self.locks: list[LockEntity] = []
+        self.climates: list[ClimateEntity] = []
 
     async def async_login(self):
         """Login to Rently."""
